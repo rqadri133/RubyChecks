@@ -5,6 +5,31 @@ require "rspec/expectations"
 
 
 
+Given /^I send credentials and send mark down body$/ do |credentials|
+  url = URI("https://dev-8s97qw7o.auth0.com/oauth/token")
+  
+  https = Net::HTTP.new(url.host, url.port)
+  https.use_ssl = true
+  https.verify_mode = OpenSSL::SSL::VERIFY_NONE
+  
+  request = Net::HTTP::Post.new(url)
+  request["content-type"] = 'application/json'
+  request.body = credentials
+  
+  @response = https.request(request)
+  puts @response.read_body
+  
+end 
+
+Then /^the response status for bearer code should be "([^"]*)"$/ do |status|
+  begin
+    @response.code.should eq(status)
+  rescue RSpec::Expectations::ExpectationNotMetError => e
+    puts "Response body:"
+    raise e
+  end
+end
+
 
 
 
@@ -19,7 +44,7 @@ Given /^I send and accept JSON$/ do
     request["Content-Type"] = "application/json"
     request.body = "{\r\n  \"appUserId\": \"3fa85f64-5717-4562-b3fc-2c963f66afa6\",\r\n  \"appUserName\": \"sqadri1166\",\r\n  \"appNameDesc\": \"string\",\r\n  \"appRoleId\": \"3fa85f64-5717-4562-b3fc-2c963f66afa6\",\r\n  \"appUserPwd\": \"Astaghee@166\",\r\n  \"isActive\": true,\r\n  \"createdDate\": \"2020-11-18T14:47:38.636Z\",\r\n  \"createdBy\": \"3fa85f64-5717-4562-b3fc-2c963f66afa6\"\r\n}"
 
-    @response = https.request(request)
+    @responseobj = https.request(request)
     
 
 end
@@ -27,7 +52,7 @@ end
 
 Then /^the response status should be "([^"]*)"$/ do |status|
   begin
-    @response.code.should eq(status)
+    @responseobj.code.should eq(status)
   rescue RSpec::Expectations::ExpectationNotMetError => e
     puts "Response body:"
     raise e
